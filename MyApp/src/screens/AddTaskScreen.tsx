@@ -1,63 +1,114 @@
 import React, { useState } from 'react';
-import { View, Button, Text, TextInput, StyleSheet } from 'react-native';
+import { View, Button, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { Task } from '../types/Task';
+import { useTasks } from '../hooks/useTasks';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const AddTaskScreen: React.FC = () => {
-  const [text, setText] = useState('');
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [limite, setLimite] = useState(false);
+  const [date, setDate] = useState<Date | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const{createTask} = useTasks();
 
-const storeData = async (newTask: Task) => {
-  try {
-    //await AsyncStorage.setItem('@ma_clé', JSON.stringify([]));
-    const existing = await AsyncStorage.getItem('@ma_clé');
-    console.log(existing)
-    const tasks: Task[] = existing ? JSON.parse(existing) : [];
-    console.log(tasks)
+  const handleAddTask = () => {
+    const newTask: Task = {
+      id: Date.now(),
+      createdAt:new Date(),
+      isDone: false,
+      title,
+      description,
+      limite,
+      limitDate: date || new Date(),
+    };
 
-    const updatedTasks = [...tasks, newTask];
-
-    await AsyncStorage.setItem('@ma_clé', JSON.stringify(updatedTasks));
-  } catch (e) {
-    console.error('Erreur :', e);
-  }
-};
-
-const handleAddTask = () => {
-  const newTask: Task = {
-    id: Date.now(),
-    isDone: false,
-    title: text,
+    createTask(newTask);
+    setTitle('');
+    setDescription('');
+    setDate(null);
   };
 
-  storeData(newTask);
-  setText('');
-};
-
   return (
-    <View style={styles.container}>
-      <Text>Ajouter une tâche</Text>
-      <Text>Ajouter une tâche</Text>
-      <Text>Ajouter une tâche</Text>
+    <SafeAreaView style={styles.page}>
       <Text>Ajouter une tâche</Text>
       <TextInput
         placeholder="Nom de la tâche"
-        value={text}
-        onChangeText={setText}
+        value={title}
+        onChangeText={setTitle}
         style={styles.input}
       />
+      <TextInput
+        placeholder="Description de la tâche"
+        value={description}
+        onChangeText={setDescription}
+        style={styles.input}
+      />
+      <Text>
+      Mettre une limite 
+      <TouchableOpacity
+        style={limite ? styles.taskMarkerDone : styles.taskMarker}
+        onPress={() => setLimite(!limite)}
+      />
+      </Text>
+
+      {limite &&(
+        <TouchableOpacity  onPress={() => setShowModal(true)}>
+          <Text 
+          style={styles.input} 
+          
+          >{date?new Date(date).toLocaleDateString():"Sélectionner une date"}
+          </Text>
+        </TouchableOpacity>
+      )}
+
+
+      <DateTimePickerModal
+        isVisible={showModal}
+        mode="datetime"
+        locale="fr_FR"
+        onConfirm={(selectedDate) => {
+          setDate(selectedDate);
+          setShowModal(false);
+        }}
+        onCancel={() => setShowModal(false)}
+      />
+
       <Button title="Ajouter" onPress={handleAddTask} />
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 20,
+  page:{
+    paddingLeft:20,
+    paddingRight:20,
+    paddingBottom:20,
   },
   input: {
     borderWidth: 1,
     padding: 10,
     marginVertical: 10,
+  },
+
+
+
+    taskMarker: {
+    height: 16,
+    width: 16,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#B2B2B2',
+    marginRight: 15,
+  },
+  taskMarkerDone: {
+    height: 16,
+    width: 16,
+    borderRadius: 4,
+    backgroundColor: '#1DB863',
+    marginRight: 15,
   },
 });
 
