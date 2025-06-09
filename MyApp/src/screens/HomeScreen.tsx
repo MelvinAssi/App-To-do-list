@@ -13,8 +13,8 @@ type NavigationProp = StackNavigationProp<RootTabParamList>;
 const HomeScreen: React.FC = () => {
    const navigation = useNavigation<NavigationProp>();
   const{tasks,updateTask} = useTasks();
-  const [todayTasksToDo,setTodayTasksToDo] =useState<Task[]>()
-  const [todayTasksDone,setTodayTasksDone] =useState<Task[]>()
+  const [todayTasksToDo,setTodayTasksToDo] =useState<Task[]>([])
+  const [todayTasksDone,setTodayTasksDone] =useState<Task[]>([])
   const today = new Date();
 
 
@@ -54,7 +54,7 @@ const HomeScreen: React.FC = () => {
         <ScrollView style={styles.taskScrollView}>
           <Text style={styles.title2}>Taches en cours</Text>
           {
-            todayTasksToDo?(
+            todayTasksToDo && todayTasksToDo.length > 0   ?(
               <>                
                 {todayTasksToDo.map((task) => (
                   <TouchableOpacity onPress={()=>showDetail(task)}  key={task.id} style={styles.taskView}>
@@ -73,7 +73,7 @@ const HomeScreen: React.FC = () => {
             )
           }
           {
-            todayTasksDone ? (
+            todayTasksDone && todayTasksDone.length > 0 ? (
               <>
                 <Text style={styles.title2}>Taches terminé</Text>
                 {todayTasksDone.map((task) => (

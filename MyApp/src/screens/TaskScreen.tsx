@@ -1,80 +1,143 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Button } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Task } from '../types/Task';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, TextInput, FlatList } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootTabParamList } from '../navigations/AppNavigator';
-import { ScrollView } from 'react-native-gesture-handler';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { taskContext } from '../service/taskContext';
+import { Task } from '../types/Task';
 import { useTasks } from '../hooks/useTasks';
-
+import { SearchBar } from 'react-native-elements';
 
 type NavigationProp = StackNavigationProp<RootTabParamList>;
 
 const TaskScreen: React.FC = () => {
-
   const navigation = useNavigation<NavigationProp>();
-  //const [tasks, setTasks] = useState<Task[]>([]);
- 
+  const { tasks, updateTask } = useTasks();
 
-  const { tasks,updateTask } = useTasks();
+  const [searchValue, setSearchValue] = useState('');
+  const [filteredTasks, setFilteredTasks] = useState<Task[]>(tasks);
 
-
+  useEffect(() => {
+    searchFunction(searchValue);
+  }, [tasks]);
 
   const toggleTask = (task: Task) => {
     task.isDone = !task.isDone;
-    updateTask(task)
+    updateTask(task);
   };
 
+  const showDetail = (task: Task) => {
+    navigation.navigate('DetailTask', { task });
+  };
 
-  const showDetail = (task:Task) =>{
-    navigation.navigate("DetailTask",{task});
-  }
-  const addTask =() =>{
+  const addTask = () => {
     navigation.navigate('AddTask');
-  }
+  };
+
+  const searchFunction = (text: string) => {
+    const filtered = tasks.filter(task =>
+      task.title.toUpperCase().includes(text.toUpperCase())
+    );
+    setFilteredTasks(filtered);
+    setSearchValue(text);
+  };
+
+  const renderItem = ({ item }: { item: Task }) => (
+    <TouchableOpacity
+      onPress={() => showDetail(item)}
+      style={styles.taskView}
+    >
+      <Text style={styles.taskTitle}>{item.title}</Text>
+      <TouchableOpacity
+        style={item.isDone ? styles.taskMarkerDone : styles.taskMarker}
+        onPress={() => toggleTask(item)}
+      />
+    </TouchableOpacity>
+  );
 
   return (
-    <SafeAreaView style={ styles.page}>
-      <Text style={{ fontWeight: 'bold', fontSize: 18 }}>Liste des tâches  :</Text>
-      <ScrollView style={{}}>
-        {tasks.map((task) => (
-          <TouchableOpacity onPress={()=>showDetail(task)} key={task.id} style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
-            <TouchableOpacity
-              style={task.isDone ? styles.taskMarkerDone : styles.taskMarker}
-              onPress={() => toggleTask(task)}
-            />
-            <Text style={{ marginLeft: 10 }}>{task.title}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-    <TouchableOpacity  onPress={addTask} style={styles.addButton} ><Text style={{fontWeight:'bold',fontSize:40,color:'white'}}>+</Text></TouchableOpacity>
+    <SafeAreaView style={styles.page}>
+      <Text style={styles.title1}>Liste des tâches :</Text>
+      {/*
+              <TextInput
+        placeholder="Rechercher une tâche..."
+        value={searchValue}
+        onChangeText={searchFunction}
+        style={styles.searchInput}
+      />  
+      
+      */}
+
+      <SearchBar
+        placeholder="Rechercher..."
+        value={searchValue}
+        onChangeText={searchFunction}        
+        platform="default"
+        round
+        lightTheme
+        containerStyle={{ backgroundColor: 'white'}}
+        inputContainerStyle={{ backgroundColor: 'white' }}
+        searchIcon={{ size: 24, color: "black" }} 
+        clearIcon={{ size: 24, color: "black" }} 
+        cancelIcon={{ size: 24, color: "black" }}
+      />
+
+      <FlatList
+        data={filteredTasks}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id.toString()}
+        contentContainerStyle={{ paddingBottom: 100 }}
+      />
+
+      <TouchableOpacity onPress={addTask} style={styles.addButton}>
+        <Text style={{ fontWeight: '500', fontSize: 40, color: 'white' }}>+</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  page:{
-    paddingLeft:20,
-    paddingRight:20,
-    paddingBottom:20,
+  page: {
+    paddingLeft: 20,
+    paddingRight: 20,
+    paddingBottom: 20,
+    flex: 1,
   },
-  addButton:{
-    position:'absolute',
-    bottom:50,
-    right:25,
-    backgroundColor:'blue',
-    width:80,
-    height:80,
-    borderRadius:40,
-
-    display:'flex',
-    justifyContent:'center',
-    alignItems:'center',
-
-
+  title1: {
+    fontSize: 30,
+    marginVertical: 10,
+  },
+  taskView: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    height: 50,
+    paddingHorizontal: 20,
+    marginVertical: 5,
+    borderWidth: 2,
+    borderColor: 'black',
+    borderRadius: 10,
+  },
+  taskTitle: {
+    fontSize: 15,
+  },
+  searchInput: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 10,
+  },
+  addButton: {
+    position: 'absolute',
+    bottom: 50,
+    right: 25,
+    backgroundColor: 'blue',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   taskMarker: {
     height: 16,

@@ -1,6 +1,7 @@
 import { createContext, ReactElement, ReactNode, useEffect, useState } from "react";
 import { Task } from "../types/Task";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAuthContext } from "../hooks/useAuthContext";
 
 type TaskContextType = {
     tasks: Task[];
@@ -13,26 +14,31 @@ type TaskContextType = {
 export const taskContext = createContext<TaskContextType | null>(null);
 
 const TaskProvider = (props: { children: ReactNode }): ReactElement => {
+    const { user,isLoading } = useAuthContext();
     const [tasks, setTasks] = useState<Task[]>([]);
-    const [read, setRead] = useState(false);
-    const nameRepo = '@ma_clé';
+    const getStorageKey = () => (user ? `@tasks_${user.uid}` : '@tasks_guest');
 
     useEffect(() => {
-        if (!read) {
-            readTask();
-            setRead(true);
-        } else {
+    if (!isLoading && user) {
+        readTask();
+        console.log("init"+getStorageKey())
+    }
+    }, [user, isLoading]);
+    useEffect(() => {
+        if (!isLoading && user) {
             updateData();
+            console.log("update"+getStorageKey())
         }
     }, [tasks]);
 
     const createTask = async (newTask: Task) => {
         try {
-            const existing = await AsyncStorage.getItem(nameRepo);
+            const storageKey = getStorageKey();
+            const existing = await AsyncStorage.getItem(storageKey);
             const oldTasks: Task[] = existing ? JSON.parse(existing) : [];
             const updatedTasks = [...oldTasks, newTask];
-            await AsyncStorage.setItem(nameRepo, JSON.stringify(updatedTasks));
-            setTasks(updatedTasks); // Ajouter ça pour mise à jour immédiate
+            await AsyncStorage.setItem(storageKey, JSON.stringify(updatedTasks));
+            setTasks(updatedTasks); 
         } catch (e) {
             console.error('Erreur de la création :', e);
         }
@@ -40,7 +46,8 @@ const TaskProvider = (props: { children: ReactNode }): ReactElement => {
 
     const readTask = async () => {
         try {
-            const jsonValue = await AsyncStorage.getItem(nameRepo);
+            const storageKey = getStorageKey();
+            const jsonValue = await AsyncStorage.getItem(storageKey);
             if (jsonValue !== null) {
                 setTasks(JSON.parse(jsonValue));
             }
@@ -62,8 +69,9 @@ const TaskProvider = (props: { children: ReactNode }): ReactElement => {
     };
 
     const updateData = async () => {
+        const storageKey = getStorageKey();
         try {
-            await AsyncStorage.setItem(nameRepo, JSON.stringify(tasks));
+            await AsyncStorage.setItem(storageKey, JSON.stringify(tasks));
         } catch (e) {
             console.error('Erreur de la maj', e);
         }
