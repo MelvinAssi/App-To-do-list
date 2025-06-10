@@ -3,12 +3,12 @@ import { View, Text, TouchableOpacity, StyleSheet, TextInput, FlatList } from 'r
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootTabParamList } from '../navigations/AppNavigator';
 import { Task } from '../types/Task';
 import { useTasks } from '../hooks/useTasks';
 import { SearchBar } from 'react-native-elements';
+import { RootParamList } from '../navigations/AppNavigator';
 
-type NavigationProp = StackNavigationProp<RootTabParamList>;
+type NavigationProp = StackNavigationProp<RootParamList>;
 
 const TaskScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
@@ -27,11 +27,11 @@ const TaskScreen: React.FC = () => {
   };
 
   const showDetail = (task: Task) => {
-    navigation.navigate('DetailTask', { task });
+    navigation.navigate('Crud',{screen :'DetailTask',params:{ task }});
   };
 
   const addTask = () => {
-    navigation.navigate('AddTask');
+    navigation.navigate('Crud',{screen :'AddTask'});
   };
 
   const searchFunction = (text: string) => {
@@ -86,7 +86,7 @@ const TaskScreen: React.FC = () => {
         data={filteredTasks}
         renderItem={renderItem}
         keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{ paddingBottom: 50 }}
       />
 
       <TouchableOpacity onPress={addTask} style={styles.addButton}>
@@ -100,7 +100,6 @@ const styles = StyleSheet.create({
   page: {
     paddingLeft: 20,
     paddingRight: 20,
-    paddingBottom: 20,
     flex: 1,
   },
   title1: {

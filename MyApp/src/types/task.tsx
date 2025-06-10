@@ -4,7 +4,9 @@ export interface Task {
     title:string,
     description:string,
     createdAt:Date,
-    limite:boolean,
-    limitDate:Date,
+    hasDueDate: boolean;
+    dueDate: Date;
+    hasDueTime: boolean;
+    dueTime: Date;
 
 }

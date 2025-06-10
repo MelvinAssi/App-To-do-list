@@ -9,9 +9,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const AddTaskScreen: React.FC = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [limite, setLimite] = useState(false);
+  const [hasDueDate, setHasDueDate] = useState(false);
   const [date, setDate] = useState<Date | null>(null);
-  const [showModal, setShowModal] = useState(false);
+  const [hasDueTime, sethasDueTime] = useState(false);
+  const [time, setTime] = useState<Date | null>(null);
+  const [showModalDate, setShowModalDate] = useState(false);
+  const [showModalTime, setShowModalTime] = useState(false);
   const{createTask} = useTasks();
 
   const handleAddTask = () => {
@@ -21,19 +24,24 @@ const AddTaskScreen: React.FC = () => {
       isDone: false,
       title,
       description,
-      limite,
-      limitDate: date || new Date(),
+      hasDueDate,
+      dueDate: date || new Date(),
+      hasDueTime,
+      dueTime: time || new Date(),
+
     };
 
     createTask(newTask);
     setTitle('');
     setDescription('');
     setDate(null);
+    setTime(null);
+    setHasDueDate(false);
+    sethasDueTime(false);
   };
 
   return (
-    <SafeAreaView style={styles.page}>
-      <Text>Ajouter une tâche</Text>
+    <View style={styles.page}>
       <TextInput
         placeholder="Nom de la tâche"
         value={title}
@@ -46,51 +54,81 @@ const AddTaskScreen: React.FC = () => {
         onChangeText={setDescription}
         style={styles.input}
       />
-      <Text>
-      Mettre une limite 
-      <TouchableOpacity
-        style={limite ? styles.taskMarkerDone : styles.taskMarker}
-        onPress={() => setLimite(!limite)}
-      />
-      </Text>
+      <View style={styles.toogleAndLabel}>
+        <TouchableOpacity
+          style={hasDueDate ? styles.taskMarkerDone : styles.taskMarker}
+          onPress={() => setHasDueDate(!hasDueDate)}
+        />
+        <Text>Mettre une date limite </Text>
+      </View>
+      {hasDueDate &&(
+        <>
+          <TouchableOpacity  onPress={() => setShowModalDate(true)}>
+            <Text style={styles.input}>
+              {date?new Date(date).toLocaleDateString():"Sélectionner une date"}
+            </Text>
+          </TouchableOpacity>
 
-      {limite &&(
-        <TouchableOpacity  onPress={() => setShowModal(true)}>
-          <Text 
-          style={styles.input} 
-          
-          >{date?new Date(date).toLocaleDateString():"Sélectionner une date"}
+          <View style={styles.toogleAndLabel}>
+            <TouchableOpacity
+              style={hasDueTime ? styles.taskMarkerDone : styles.taskMarker}
+              onPress={() => sethasDueTime(!hasDueTime)}
+            />
+            <Text>Mettre une heure limite</Text>
+          </View>
+        </>
+      )}
+      {hasDueTime &&(
+        <TouchableOpacity  onPress={() => setShowModalTime(true)}>
+          <Text style={styles.input}>
+            {time?new Date(time).toLocaleTimeString():"Sélectionner une heure"}
           </Text>
         </TouchableOpacity>
       )}
 
 
       <DateTimePickerModal
-        isVisible={showModal}
-        mode="datetime"
+        isVisible={showModalDate}
+        mode="date"
         locale="fr_FR"
         onConfirm={(selectedDate) => {
           setDate(selectedDate);
-          setShowModal(false);
+          setShowModalDate(false);
         }}
-        onCancel={() => setShowModal(false)}
+        onCancel={() => setShowModalDate(false)}
+      />
+      <DateTimePickerModal
+        isVisible={showModalTime}
+        mode="time"
+        locale="fr_FR"
+        onConfirm={(selectedTime) => {
+          setTime(selectedTime);
+          setShowModalTime(false);
+        }}
+        onCancel={() => setShowModalTime(false)}
       />
 
       <Button title="Ajouter" onPress={handleAddTask} />
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   page:{
-    paddingLeft:20,
-    paddingRight:20,
-    paddingBottom:20,
+    paddingHorizontal:20,
+    flex: 1,
   },
   input: {
     borderWidth: 1,
+    borderRadius:10,
     padding: 10,
     marginVertical: 10,
+  },
+  toogleAndLabel:{
+      display:'flex',
+      flexDirection:'row',
+      alignItems:'center',
+      marginVertical: 10,
   },
 
 

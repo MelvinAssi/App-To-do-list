@@ -1,13 +1,14 @@
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Button } from 'react-native';
-import { RootTabParamList } from '../navigations/AppNavigator';
+import { RootParamList } from '../navigations/AppNavigator';
 import { RouteProp, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useContext, useEffect, useState } from 'react';
 import { useAuthContext } from '../hooks/useAuthContext';
+import { AuthStackParamList } from '../navigations/AuthNavigator';
 
-type SignInTaskRouteProp = RouteProp<RootTabParamList, 'SignIn'>;
-type NavigationProp = StackNavigationProp<RootTabParamList>;
+type SignInTaskRouteProp = RouteProp<AuthStackParamList, 'SignIn'>;
+type NavigationProp = StackNavigationProp<RootParamList>;
 type Props = {
   route: SignInTaskRouteProp;
 };
@@ -25,10 +26,11 @@ const SignInScreen: React.FC<Props> = () => {
         }
         try{
           await signIn(email, password)
-          navigation.replace('Main');
+          
         }catch (error){
           console.error('Sign-in error:', error);
         }            
+        //  test3@example.com
     }
     return(
         <SafeAreaView style={styles.page}>
@@ -51,8 +53,8 @@ const SignInScreen: React.FC<Props> = () => {
                 <Text style={{fontWeight:'bold',fontSize:24,color:'black'}}>SignIn</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity  onPress={()=>(navigation.navigate('SignUp'))} style={undefined} >
-                <Text style={{fontWeight:'bold',fontSize:24,color:'black'}}>Pas encore de compte</Text>
+            <TouchableOpacity  onPress={()=>(navigation.navigate('Auth',{screen:'SignUp'}))} style={undefined} >
+                <Text style={{fontWeight:'bold',fontSize:24,color:'black'}}>Pas encore de compte{user?.email}</Text>
             </TouchableOpacity>
 
         </SafeAreaView>

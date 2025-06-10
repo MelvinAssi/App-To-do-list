@@ -1,12 +1,11 @@
 import React from 'react';
 import { View, Text, Button, StyleSheet, SafeAreaView } from 'react-native';
 import { useAuthContext } from '../hooks/useAuthContext';
-import { RootTabParamList } from '../navigations/AppNavigator';
+import { RootParamList } from '../navigations/AppNavigator';
 import { RouteProp, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 
-type SignUpTaskRouteProp = RouteProp<RootTabParamList, 'SignUp'>;
-type NavigationProp = StackNavigationProp<RootTabParamList>;
+type NavigationProp = StackNavigationProp<RootParamList>;
 const SettingsScreen: React.FC = () => {
   const { user, signOut } = useAuthContext();
   const navigation = useNavigation<NavigationProp>();
@@ -15,7 +14,6 @@ const SettingsScreen: React.FC = () => {
     try {
       await signOut();
       console.log("Déconnexion réussie");
-      navigation.replace('SignIn');
     } catch (err) {
       console.error("Erreur de déconnexion", err);
     }

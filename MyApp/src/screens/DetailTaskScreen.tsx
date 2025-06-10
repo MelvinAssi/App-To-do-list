@@ -1,6 +1,5 @@
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Button } from 'react-native';
 import { Task } from '../types/Task';
-import { RootTabParamList } from '../navigations/AppNavigator';
 import { RouteProp, useNavigation } from '@react-navigation/native';
 import { useTasks } from '../hooks/useTasks';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -9,9 +8,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import CalendarIcon from '../assets/icons/calendar_month_24dp_E3E3E3_FILL1_wght400_GRAD0_opsz24.svg';
 import Icons from 'react-native-vector-icons/FontAwesome';
 import MaterialIcons  from 'react-native-vector-icons/MaterialIcons';
+import { CrudStackParamList } from '../navigations/CrudNavigator';
 
-type DetailTaskRouteProp = RouteProp<RootTabParamList, 'DetailTask'>;
-type NavigationProp = StackNavigationProp<RootTabParamList>;
+type DetailTaskRouteProp = RouteProp<CrudStackParamList, 'DetailTask'>;
+type NavigationProp = StackNavigationProp<CrudStackParamList>;
 type Props = {
   route: DetailTaskRouteProp;
 };
@@ -29,16 +29,14 @@ const DetailTaskScreen: React.FC<Props> = ({ route }) => {
     updateTask(task)
     navigation.goBack()
   }
-  const update =(task:Task)=>{
-    updateTask(task)
-    
+  const editButton =(task:Task)=>{
+    navigation.navigate("EditTask",{task})
   }
 
     return(
-        <SafeAreaView style={styles.page}>
+        <View style={styles.page}>
           <View style={styles.taskheader}>
             <Text style={styles.taskTitle}>{task.title}</Text>
-            <Text style={task.isDone ? styles.taskStateDone : styles.taskState}>{task.isDone?"Terminer":"En cours"}</Text>
           </View>
           <View style={styles.taskAttribut}>
             <View style={styles.taskAttribut_Left}>
@@ -47,33 +45,36 @@ const DetailTaskScreen: React.FC<Props> = ({ route }) => {
             </View>
               <Text style={styles.taskText}>{new Date(task.createdAt).toLocaleDateString()}</Text>
           </View>
-          <View style={styles.taskAttribut}>
-            <View style={styles.taskAttribut_Left}>
-              <Icons name="calendar" size={24} color="black" />
-              <Text style={styles.taskText}> Date limite le :</Text>
-            </View>              
-            <Text style={styles.taskText}>{new Date(task.limitDate).toLocaleDateString()}</Text>
-          </View>
-          <View style={styles.taskAttribut}>
-            <View style={styles.taskAttribut_Left}>
-              <Icons name="clock-o" size={24} color="black" />
-              <Text style={styles.taskText}> Heure :</Text>
-            </View>              
-            <Text style={styles.taskText}>{new Date(task.limitDate).toLocaleTimeString()}</Text>
-          </View>
+          {task.hasDueDate &&(
+            <View style={styles.taskAttribut}>
+              <View style={styles.taskAttribut_Left}>
+                <Icons name="calendar" size={24} color="black" />
+                <Text style={styles.taskText}> Date limite le :</Text>
+              </View>              
+              <Text style={styles.taskText}>{new Date(task.dueDate).toLocaleDateString()}</Text>
+            </View>
+          )}
+         {task.hasDueTime &&(
+            <View style={styles.taskAttribut}>
+              <View style={styles.taskAttribut_Left}>
+                <Icons name="clock-o" size={24} color="black" />
+                <Text style={styles.taskText}> Heure :</Text>
+              </View>              
+              <Text style={styles.taskText}>{new Date(task.dueTime).toLocaleTimeString()}</Text>
+            </View>
+          )}
+
           <View style={styles.taskAttribut_Left}>
               <MaterialIcons name="description" size={24} color="black" />
               <Text style={styles.taskText}> Description :</Text>
           </View>             
           <Text style={styles.taskDescription}>{task.description}</Text>
-          <TextInput
-                  placeholder="Description de la tâche"
-                  value={task.description}
-                  onChangeText={()=>update(task)}
-            />
 
-          <TouchableOpacity  onPress={()=>stateButton(task)} style={undefined} >
-            <Text style={{fontWeight:'bold',fontSize:24,color:'black'}}>{task.isDone?"Annuler":"Valider"}</Text>
+
+
+
+          <TouchableOpacity  onPress={()=>editButton(task)} style={undefined} >
+            <Text style={{fontWeight:'bold',fontSize:24,color:'black'}}>Editer</Text>
           </TouchableOpacity>
 
           <TouchableOpacity  onPress={deleteButtton} style={undefined} >
@@ -81,7 +82,7 @@ const DetailTaskScreen: React.FC<Props> = ({ route }) => {
           </TouchableOpacity>
           
 
-        </SafeAreaView>
+        </View>
     );
 
 };

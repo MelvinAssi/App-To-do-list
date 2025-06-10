@@ -1,13 +1,14 @@
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Button } from 'react-native';
-import { RootTabParamList } from '../navigations/AppNavigator';
+import { RootParamList } from '../navigations/AppNavigator';
 import { RouteProp, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useContext, useState } from 'react';
 import { useAuthContext } from '../hooks/useAuthContext';
+import { AuthStackParamList } from '../navigations/AuthNavigator';
 
-type SignUpTaskRouteProp = RouteProp<RootTabParamList, 'SignUp'>;
-type NavigationProp = StackNavigationProp<RootTabParamList>;
+type SignUpTaskRouteProp = RouteProp<AuthStackParamList, 'SignUp'>;
+type NavigationProp = StackNavigationProp<AuthStackParamList>;
 type Props = {
   route: SignUpTaskRouteProp;
 };
@@ -25,7 +26,7 @@ const SignUpScreen: React.FC<Props> = () => {
         }
         try{
           await signUp(email, password)
-          navigation.replace('Main');
+          //navigation.replace('Main', { screen: 'Home' });
         }catch (error){
           console.error('Sign-up error:', error);
         }  

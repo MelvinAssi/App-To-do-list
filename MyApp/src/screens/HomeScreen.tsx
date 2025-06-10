@@ -6,9 +6,9 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { Task } from '../types/Task';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootTabParamList } from '../navigations/AppNavigator';
+import { RootParamList } from '../navigations/AppNavigator';
 
-type NavigationProp = StackNavigationProp<RootTabParamList>;
+type NavigationProp = StackNavigationProp<RootParamList>;
 
 const HomeScreen: React.FC = () => {
    const navigation = useNavigation<NavigationProp>();
@@ -19,8 +19,8 @@ const HomeScreen: React.FC = () => {
 
 
   const todayTasks = tasks.filter((task: Task) => {
-    if (!task.limite || !task.limitDate) return false;
-    const taskDate = new Date(task.limitDate);
+    if (!task.hasDueDate || !task.dueDate) return false;
+    const taskDate = new Date(task.dueDate);
     return (
       taskDate.getFullYear() === today.getFullYear() &&
       taskDate.getMonth() === today.getMonth() &&
@@ -28,7 +28,7 @@ const HomeScreen: React.FC = () => {
     );
   });
   const showDetail = (task:Task) =>{
-    navigation.navigate("DetailTask",{task});
+    navigation.navigate('Crud',{screen:'DetailTask',params:{task}});
   }
 
   useEffect(()=>{
