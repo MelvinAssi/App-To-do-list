@@ -19,16 +19,12 @@ type Props = {
 const DetailTaskScreen: React.FC<Props> = ({ route }) => {
   const { task } = route.params;
   const navigation = useNavigation<NavigationProp>();
-  const{deleteTask,updateTask}=useTasks();
+  const{deleteTask}=useTasks();
   const deleteButtton = () =>{
       deleteTask(task.id)
       navigation.goBack()
   }
-  const stateButton =(task:Task) =>{
-    task.isDone=!task.isDone
-    updateTask(task)
-    navigation.goBack()
-  }
+
   const editButton =(task:Task)=>{
     navigation.navigate("EditTask",{task})
   }
@@ -51,7 +47,7 @@ const DetailTaskScreen: React.FC<Props> = ({ route }) => {
                 <Icons name="calendar" size={24} color="black" />
                 <Text style={styles.taskText}> Date limite le :</Text>
               </View>              
-              <Text style={styles.taskText}>{new Date(task.dueDate).toLocaleDateString()}</Text>
+              <Text style={styles.taskText}>{task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'Pas de date'}</Text>
             </View>
           )}
          {task.hasDueTime &&(
@@ -60,7 +56,7 @@ const DetailTaskScreen: React.FC<Props> = ({ route }) => {
                 <Icons name="clock-o" size={24} color="black" />
                 <Text style={styles.taskText}> Heure :</Text>
               </View>              
-              <Text style={styles.taskText}>{new Date(task.dueTime).toLocaleTimeString()}</Text>
+              <Text style={styles.taskText}>{task.dueTime ? new Date(task.dueTime).toLocaleTimeString() : 'Pas d\'heure'}</Text>
             </View>
           )}
 
@@ -72,14 +68,16 @@ const DetailTaskScreen: React.FC<Props> = ({ route }) => {
 
 
 
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity  onPress={()=>editButton(task)} style={styles.editButton} >
+              <Text style={styles.textButton}>Editer</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity  onPress={()=>editButton(task)} style={undefined} >
-            <Text style={{fontWeight:'bold',fontSize:24,color:'black'}}>Editer</Text>
-          </TouchableOpacity>
+            <TouchableOpacity  onPress={deleteButtton} style={styles.deleteButton} >
+              <Text style={styles.textButton}>Suprimer</Text>
+            </TouchableOpacity>
+          </View>
 
-          <TouchableOpacity  onPress={deleteButtton} style={undefined} >
-            <Text style={{fontWeight:'bold',fontSize:24,color:'black'}}>Suprimer</Text>
-          </TouchableOpacity>
           
 
         </View>
@@ -105,15 +103,9 @@ const styles = StyleSheet.create({
   taskTitle:{
     fontSize:40,
     fontWeight:'bold',
+    color:'#393E46',
     marginVertical:10,
-  },
-  taskState:{
-    marginVertical:10,
-    color:'red'
-  },
-  taskStateDone:{
-    marginVertical:10,
-    color:'green'
+
   },
 
   taskAttribut:{
@@ -131,11 +123,44 @@ const styles = StyleSheet.create({
   taskText:{
     fontSize:24,
     marginVertical:5,
+    color:'#393E46',
   },
   taskDescription:{
     minHeight:100,
     fontSize:20,
+    color:'#393E46',
     marginVertical:5,
+  },
+  buttonContainer:{
+    display:'flex',
+    flexDirection:'row',
+    alignContent:'center',
+    justifyContent:'center'
+  },
+  editButton:{
+    width:100,
+    backgroundColor: '#00ADB5',
+    borderWidth:2,
+    borderBlockColor:'#222831',
+    padding: 15,
+    borderRadius: 5,
+    alignItems: 'center',
+    margin: 10,
+  },
+  deleteButton:{
+    backgroundColor: 'red',
+    width:100,
+    borderWidth:2,
+    borderBlockColor:'#222831',
+    padding: 15,
+    borderRadius: 5,
+    alignItems: 'center',
+    margin: 10,
+  },
+  textButton:{
+    fontWeight:'bold',
+    fontSize:16,
+    color:'#EEEEEE'
   },
 });
 

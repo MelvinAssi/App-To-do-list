@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { taskContext } from "../service/taskContext";
+import { taskContext } from "../context/taskContext";
 
 export const useTasks = () => {
     const context = useContext(taskContext);

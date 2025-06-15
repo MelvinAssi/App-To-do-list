@@ -1,14 +1,10 @@
 import React from 'react';
-import { View, Text, Button, StyleSheet, SafeAreaView } from 'react-native';
+import {  Text, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
 import { useAuthContext } from '../hooks/useAuthContext';
-import { RootParamList } from '../navigations/AppNavigator';
-import { RouteProp, useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import Button from '../components/Button';
 
-type NavigationProp = StackNavigationProp<RootParamList>;
 const SettingsScreen: React.FC = () => {
   const { user, signOut } = useAuthContext();
-  const navigation = useNavigation<NavigationProp>();
 
   const handleLogout = async () => {
     try {
@@ -22,7 +18,7 @@ const SettingsScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.email}>{user?.email}</Text>
-      <Button title="Se déconnecter" onPress={handleLogout} />
+      <Button text='Se déconnecter' onPress={() => handleLogout()} ></Button>
     </SafeAreaView>
   );
 };
@@ -37,7 +33,19 @@ const styles = StyleSheet.create({
   email: {
     fontSize: 18,
     marginBottom: 20
-  }
+  },
+  button: {
+    backgroundColor: '#00ADB5',
+    padding: 15,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  buttonText: {
+    fontWeight: 'bold',
+    fontSize: 18,
+    color: '#EEEEEE',
+  },
 });
 
 export default SettingsScreen;

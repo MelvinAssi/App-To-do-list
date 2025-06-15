@@ -2,8 +2,9 @@ import React from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet } from 'react-native';
 import AppNavigator from './src/navigations/AppNavigator';
-import { TaskProvider } from './src/service/taskContext';
-import {AuthProvider}  from './src/service/authContext';
+import { TaskProvider } from './src/context/taskContext';
+import {AuthProvider}  from './src/context/authContext';
+
 
 const App = () => {
   return (
@@ -19,7 +20,7 @@ const App = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 1,    
   },
 });
 

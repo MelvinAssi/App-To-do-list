@@ -1,22 +1,22 @@
-import React, { use, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTasks } from '../hooks/useTasks';
-import { ScrollView } from 'react-native-gesture-handler';
-import { Task } from '../types/Task';
+import { Task, TaskState } from '../types/task';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootParamList } from '../navigations/AppNavigator';
+import TaskView from '../components/TaskView';
 
 type NavigationProp = StackNavigationProp<RootParamList>;
 
 const HomeScreen: React.FC = () => {
-   const navigation = useNavigation<NavigationProp>();
-  const{tasks,updateTask} = useTasks();
-  const [todayTasksToDo,setTodayTasksToDo] =useState<Task[]>([])
-  const [todayTasksDone,setTodayTasksDone] =useState<Task[]>([])
+  const navigation = useNavigation<NavigationProp>();
+  const { tasks } = useTasks();
+  const [todayTasksToDo, setTodayTasksToDo] = useState<Task[]>([]);
+  const [todayTasksDone, setTodayTasksDone] = useState<Task[]>([]);
+  const [todayTasksOverdue, setTodayTasksOverdue] = useState<Task[]>([]);
   const today = new Date();
-
 
   const todayTasks = tasks.filter((task: Task) => {
     if (!task.hasDueDate || !task.dueDate) return false;
@@ -27,124 +27,71 @@ const HomeScreen: React.FC = () => {
       taskDate.getDate() === today.getDate()
     );
   });
-  const showDetail = (task:Task) =>{
-    navigation.navigate('Crud',{screen:'DetailTask',params:{task}});
-  }
 
-  useEffect(()=>{
+  useEffect(() => {
     setTodayTasksToDo(
-      todayTasks.filter((task:Task)=>!task.isDone)
+      todayTasks.filter((task) => task.state === TaskState.InProgress)
     );
     setTodayTasksDone(
-      todayTasks.filter((task:Task)=>task.isDone)
+      todayTasks.filter((task) => task.state === TaskState.Completed)
     );
-
-  },[tasks])
-
-
-  const toggleTask=(task:Task)=>{
-    task.isDone=!task.isDone;
-    updateTask(task);
-
-  }
+    setTodayTasksOverdue(
+      todayTasks.filter((task) => task.state === TaskState.Overdue)
+    );
+  }, [tasks]);
 
   return (
     <SafeAreaView style={styles.page}>
-        <Text style={styles.title1}>Taches du Jour</Text>
-        <ScrollView style={styles.taskScrollView}>
-          <Text style={styles.title2}>Taches en cours</Text>
-          {
-            todayTasksToDo && todayTasksToDo.length > 0   ?(
-              <>                
-                {todayTasksToDo.map((task) => (
-                  <TouchableOpacity onPress={()=>showDetail(task)}  key={task.id} style={styles.taskView}>
-                    <Text style={styles.taskTitle}>{task.title}</Text>
-                    <TouchableOpacity
-                      style={task.isDone ? styles.taskMarkerDone : styles.taskMarker}
-                      onPress={() => toggleTask(task)}>                      
-                    </TouchableOpacity>
-                  </TouchableOpacity>
-              ))}
-              </>
-            ):(
-            <>
-              <Text>Aucune taches à faire</Text>
-            </>
-            )
-          }
-          {
-            todayTasksDone && todayTasksDone.length > 0 ? (
+      <FlatList
+        data={todayTasksToDo}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => <TaskView task={item} />}
+        ListHeaderComponent={
+          <>
+            <Text style={styles.title2}>Tâches en cours</Text>
+            {todayTasksToDo.length === 0 && (
+              <Text>Aucune tâche à faire</Text>
+            )}
+          </>
+        }
+        ListFooterComponent={
+          <>
+            {todayTasksOverdue.length > 0 && (
               <>
-                <Text style={styles.title2}>Taches terminé</Text>
-                {todayTasksDone.map((task) => (
-                  <TouchableOpacity onPress={()=>showDetail(task)}  key={task.id} style={styles.taskView}>
-                    <Text style={styles.taskTitle}>{task.title}</Text>
-                    <TouchableOpacity
-                      style={task.isDone ? styles.taskMarkerDone : styles.taskMarker}
-                      onPress={() => toggleTask(task)}>                      
-                    </TouchableOpacity>
-                  </TouchableOpacity>
-              ))}
+                <Text style={styles.title2}>Tâches en retard</Text>
+                {todayTasksOverdue.map((task) => (
+                  <TaskView key={task.id} task={task} />
+                ))}
               </>
-            ):(<></>)
-          }
-        </ScrollView>
-        <Text>{}</Text>
+            )}
+            {todayTasksDone.length > 0 && (
+              <>
+                <Text style={styles.title2}>Tâches terminées</Text>
+                {todayTasksDone.map((task) => (
+                  <TaskView key={task.id} task={task} />
+                ))}
+              </>
+            )}
+          </>
+        }
+        
+        contentContainerStyle={{ paddingBottom: 50 }}
+      />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  page:{
-    paddingLeft:20,
-    paddingRight:20,
-    paddingBottom:20,
-    flex:1,
-    display:'flex',
+  page: {
+    paddingLeft: 20,
+    paddingRight: 20,
+    paddingBottom: 20,
+    flex: 1,
   },
-  title1: {    
-    fontSize:30,
-    marginVertical:5,
+  title2: {
+    fontSize: 20,
+    marginVertical: 5,
   },
-  title2: {    
-    fontSize:20,
-    marginVertical:5,
-  },
-  taskScrollView:{
-    display:'flex',  
-  },
-  taskView:{
-    display:'flex',
-    flexDirection:'row',
-    justifyContent:'space-between',
-    alignItems:'center',
-    padding:20,
-    height:70,
-    marginVertical:5,
-    borderWidth:2,
-    borderColor:'black',
-    borderRadius:10,
-  },
-  taskTitle:{
-    fontSize:15,
-  },
-  taskMarkerDone:{
-    height:20,
-    width:20,
-    borderRadius:10,
-    borderWidth:2,
-    borderColor:'black',
-    backgroundColor:'green'
-  },
-    taskMarker:{
-    height:20,
-    width:20,
-    borderRadius:10,
-    borderWidth:2,
-    borderColor:'black',
-    backgroundColor:'white'
-  }
-
 });
 
 export default HomeScreen;

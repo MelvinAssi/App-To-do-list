@@ -10,7 +10,16 @@ export type AuthStackParamList = {
 const Stack = createStackNavigator<AuthStackParamList>();
 
 const AuthNavigator = () => (
-  <Stack.Navigator screenOptions={{ headerShown: false }}>
+  <Stack.Navigator screenOptions={{ 
+      headerShown: true ,
+      headerStyle: {
+            backgroundColor: '#222831',
+          },
+      headerTintColor: '#EEEEEE',
+      headerTitleStyle: {
+        fontWeight: 'bold',
+      },     
+    }}>
     <Stack.Screen name="SignIn" component={SignInScreen} />
     <Stack.Screen name="SignUp" component={SignUpScreen} />
   </Stack.Navigator>

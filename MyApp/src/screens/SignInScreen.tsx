@@ -1,76 +1,144 @@
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Button } from 'react-native';
-import { RootParamList } from '../navigations/AppNavigator';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { RouteProp, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useContext, useEffect, useState } from 'react';
-import { useAuthContext } from '../hooks/useAuthContext';
+import { Formik } from 'formik';
+import { object, string } from 'yup';
 import { AuthStackParamList } from '../navigations/AuthNavigator';
+import { useAuthContext } from '../hooks/useAuthContext';
+import { useState } from 'react';
+import Button from '../components/Button';
 
 type SignInTaskRouteProp = RouteProp<AuthStackParamList, 'SignIn'>;
-type NavigationProp = StackNavigationProp<RootParamList>;
+type NavigationProp = StackNavigationProp<AuthStackParamList, 'SignIn'>;
+
 type Props = {
   route: SignInTaskRouteProp;
 };
 
 const SignInScreen: React.FC<Props> = () => {
-    const navigation = useNavigation<NavigationProp>();
-    const {user,signIn} = useAuthContext();
-    const [email,setEmail] = useState('');
-    const [password,setPassword] = useState('');
+  const navigation = useNavigation<NavigationProp>();
+  const { signIn } = useAuthContext();
+  const [errorMsg, setErrorMsg] = useState('');
+  const [loading, setLoading] = useState(false);
 
-    const handleSignin = async()=>{
-      if (!email || !password) {
-          console.log('Email or password is empty:', { email, password });
-          return;
-        }
-        try{
-          await signIn(email, password)
-          
-        }catch (error){
-          console.error('Sign-in error:', error);
-        }            
-        //  test3@example.com
+  const signinSchema = object({
+    email: string()
+      .required('L\'email est obligatoire')
+      .email('Format d\'email invalide')
+      .max(64, 'Email trop long !'),
+    password: string()
+      .required('Le mot de passe est obligatoire')
+      .min(12, '12 caractères minimum')
+      .max(64, 'Mot de passe trop long !')
+      .matches(/[A-Z]/, 'Doit contenir au moins une majuscule')
+      .matches(/[a-z]/, 'Doit contenir au moins une minuscule')
+      .matches(/\d/, 'Doit contenir au moins un chiffre')
+      .matches(/[!@#$%^&*]/, 'Doit contenir au moins un caractère spécial'),
+  });
+
+  const handleSignin = async (email: string, password: string) => {
+    setErrorMsg('');
+    setLoading(true);
+    try {
+      await signIn(email, password);
+    } catch (error: any) {
+      setErrorMsg("Email ou mot de passe incorrect.");
+      console.error('Sign-in error:', error);
+    } finally {
+      setLoading(false);
     }
-    return(
-        <SafeAreaView style={styles.page}>
+  };
+
+  return (
+    <SafeAreaView style={styles.page}>
+      <Formik
+        initialValues={{ email: '', password: '' }}
+        onSubmit={(values) => handleSignin(values.email, values.password)}
+        validationSchema={signinSchema}
+      >
+        {({ errors, values, isValid, touched, handleChange, handleSubmit, isSubmitting }) => (
+          <>
             <TextInput
-                placeholder="Email"
-                value={email}
-                onChangeText={setEmail}
-                style={undefined}
-                keyboardType="email-address"
-                autoCapitalize="none"
+              placeholder="Email"
+              value={values.email}
+              onChangeText={handleChange('email')}
+              style={styles.input}
+              keyboardType="email-address"
+              autoCapitalize="none"
             />
+            {touched.email && errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+
             <TextInput
-                placeholder="Password"
-                value={password}
-                onChangeText={setPassword}
-                style={undefined}
-                secureTextEntry
+              placeholder="Mot de passe"
+              value={values.password}
+              onChangeText={handleChange('password')}
+              style={styles.input}
+              autoCapitalize="none"
+              secureTextEntry
             />
-            <TouchableOpacity  onPress={handleSignin} style={undefined} >
-                <Text style={{fontWeight:'bold',fontSize:24,color:'black'}}>SignIn</Text>
-            </TouchableOpacity>
+            { errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+            {errorMsg !== '' && <Text style={styles.errorText}>{errorMsg}</Text>}
+            <Button text='Se connecter' onPress={() => handleSubmit()} disabled={!isValid || isSubmitting} loading={loading}/>
+          </>
+        )}
+      </Formik>
 
-            <TouchableOpacity  onPress={()=>(navigation.navigate('Auth',{screen:'SignUp'}))} style={undefined} >
-                <Text style={{fontWeight:'bold',fontSize:24,color:'black'}}>Pas encore de compte{user?.email}</Text>
-            </TouchableOpacity>
-
-        </SafeAreaView>
-    );
-
+      <TouchableOpacity
+        onPress={() => navigation.navigate('SignUp')} 
+      >
+        <Text style={styles.buttonText1}>
+          Pas encore de compte ? Inscrivez-vous
+        </Text>
+      </TouchableOpacity>
+    </SafeAreaView>
+  );
 };
 
 const styles = StyleSheet.create({
-  page:{
-    paddingLeft:20,
-    paddingRight:20,
-    paddingBottom:20,
-    flex:1,
-    display:'flex',
+  page: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    backgroundColor:'#EEEEEE'
   },
-
+  input: {
+    borderWidth: 1,
+    borderColor: '#393E46',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
+    fontSize: 16,
+  },
+  errorText: {
+    fontSize: 12,
+    color: 'red',
+    marginBottom: 10,
+  },
+  button: {
+    backgroundColor: '#00ADB5',
+    padding: 15,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  buttonDisabled: {
+    backgroundColor: '#393E46',
+  },
+  buttonText: {
+    fontWeight: 'bold',
+    fontSize: 18,
+    color: '#EEEEEE',
+  },
+  buttonText1: {
+    fontWeight: 'bold',
+    fontSize: 18,
+    color: '#393E46',
+  },
+  signupButton: {
+    padding: 15,
+    alignItems: 'center',
+  },
 });
 
 export default SignInScreen;

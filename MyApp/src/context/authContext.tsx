@@ -66,6 +66,8 @@ const AuthProvider = (props: { children: ReactNode }): ReactElement => {
     }
   };
 
+
+
   return (
     <authContext.Provider value={{ user, isLoading, signIn, signUp, signOut }}>
       {props.children}
